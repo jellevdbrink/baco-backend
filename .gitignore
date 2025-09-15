@@ -1,5 +1,6 @@
 __pycache__
 venv
+media/product_images
 
 .env
 db.sqlite3
