@@ -9,6 +9,8 @@ class TeamSerializer(serializers.ModelSerializer):
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
+    team = TeamSerializer(read_only=True)
+    
     class Meta:
         model = TeamMember
         fields = "__all__"
