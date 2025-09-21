@@ -18,7 +18,9 @@ class Team(models.Model):
 
 class TeamMember(models.Model):
   name = models.CharField('Name', max_length=50)
+  email = models.EmailField('Email')
   team = models.ForeignKey(Team, verbose_name='Team', related_name='team_members', on_delete=models.RESTRICT)
+  balance = models.DecimalField('Balance', max_digits=10, decimal_places=2, default=0)
 
   def __str__(self):
     return self.name
@@ -68,7 +70,7 @@ class Order(models.Model):
     return self.items.aggregate(
         total=Sum(
           F("quantity") * F("product__price"),
-          output_field=models.DecimalField(max_digits=10, decimal_places=2)
+          output_field=models.DecimalField(max_digits=6, decimal_places=2)
         )
       )["total"] or 0
   
