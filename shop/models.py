@@ -99,3 +99,19 @@ class OrderItem(models.Model):
       models.UniqueConstraint(fields=["product", "order"], name="unique_product_per_order")
     ]
 
+
+class Payment(models.Model):
+  by = models.ForeignKey(TeamMember, verbose_name='Made by', on_delete=models.CASCADE)
+  description = models.TextField('Description', blank=True)
+  amount = models.DecimalField('Amount', max_digits=5, decimal_places=2)
+  proof_picture = models.ImageField('Proof picture', upload_to="payment_proofs")
+  completed = models.BooleanField('Completed', default=False)
+
+  def __str__(self):
+    return f"Request by {self.by.name} - {self.amount} ({'Completed' if self.completed else 'Pending'})"
+  
+  class Meta:
+    verbose_name = "Payment"
+    verbose_name_plural = "Payments"
+    ordering = ['completed']
+

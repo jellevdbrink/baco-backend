@@ -1,6 +1,7 @@
 __pycache__
 venv
 media/product_images
+media/payment_proofs
 
 .env
 db.sqlite3

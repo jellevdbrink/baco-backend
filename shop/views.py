@@ -1,8 +1,8 @@
 from rest_framework import viewsets, mixins
-from .models import Team, TeamMember, Category, Product, Order
+from .models import Team, TeamMember, Category, Product, Order, Payment
 from .serializers import (
   TeamSerializer, TeamMemberSerializer, CategorySerializer,
-  ProductSerializer, OrderSerializer
+  ProductSerializer, OrderSerializer, PaymentSerializer
 )
 
 class TeamViewSet(viewsets.ReadOnlyModelViewSet):
@@ -36,3 +36,9 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.RetrieveModelMixin, viewsets.GenericViewSet):
   queryset = Order.objects.all().select_related("by").prefetch_related("items__product")
   serializer_class = OrderSerializer
+
+
+class PaymentViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                     mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+  queryset = Payment.objects.all()
+  serializer_class = PaymentSerializer
