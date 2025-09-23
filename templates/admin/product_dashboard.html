@@ -1,0 +1,51 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+{{ block.super }}
+
+<h1>Shop Dashboard</h1>
+
+<p><strong>Total Balance:</strong> {{ total_balance }}</p>
+<p><strong>Total Spent:</strong> {{ total_spent }}</p>
+
+<h2>Top Products</h2>
+<canvas id="productChart"></canvas>
+
+<h2>Top Users</h2>
+<canvas id="userChart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const productCtx = document.getElementById('productChart').getContext('2d');
+new Chart(productCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ labels_products|safe }},
+        datasets: [{
+            label: 'Quantity Sold',
+            data: {{ values_products|safe }},
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: { responsive: true }
+});
+
+const userCtx = document.getElementById('userChart').getContext('2d');
+new Chart(userCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ labels_users|safe }},
+        datasets: [{
+            label: 'Total Spent',
+            data: {{ values_users|safe }},
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: { responsive: true }
+});
+</script>
+{% endblock %}
