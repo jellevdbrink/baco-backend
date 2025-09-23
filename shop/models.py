@@ -51,6 +51,7 @@ class Product(models.Model):
   description = models.TextField('Description', max_length=255, blank=True)
   price = models.DecimalField('Price', decimal_places=2, max_digits=5)
   category = models.ForeignKey(Category, verbose_name='Category', on_delete=models.RESTRICT)
+  visible = models.BooleanField('Visible', default=True)
 
   def __str__(self):
     return self.name
@@ -64,15 +65,19 @@ class Product(models.Model):
 class Order(models.Model):
   datetime = models.DateTimeField(auto_now_add=True, editable=False)
   by = models.ForeignKey(TeamMember, verbose_name='Made by', related_name='orders', on_delete=models.CASCADE)
+  total_amount = models.DecimalField('Total amount', max_digits=10, decimal_places=2)
 
-  @property
-  def total_amount(self):
+  def calculate_total(self):
     return self.items.aggregate(
-        total=Sum(
-          F("quantity") * F("product__price"),
-          output_field=models.DecimalField(max_digits=6, decimal_places=2)
-        )
-      )["total"] or 0
+      total=Sum(F("quantity") * F("unit_price"), output_field=models.DecimalField(max_digits=10, decimal_places=2))
+    )["total"] or 0
+
+  def save(self, *args, **kwargs):
+    if self.pk:
+      self.total_amount = self.calculate_total()
+    else:
+      self.total_amount = 0 # Should be temporary if all goes well
+    super().save(*args, **kwargs)
   
   def __str__(self):
     return f"Order on {self.datetime.strftime('%d/%m/%y')} by {self.by.name}"
@@ -88,9 +93,15 @@ class OrderItem(models.Model):
   product = models.ForeignKey(Product, verbose_name='Product', on_delete=models.CASCADE)
   order = models.ForeignKey(Order, verbose_name='Order', related_name='items', on_delete=models.CASCADE)
   quantity = models.PositiveIntegerField('Quantity', validators=[MinValueValidator(1)])
+  unit_price = models.DecimalField('Unit price', max_digits=5, decimal_places=2)
+
+  def save(self, *args, **kwargs):
+    if not self.unit_price:
+      self.unit_price = self.product.price
+    super().save(*args, **kwargs)
 
   def __str__(self):
-    return f'{self.quantity}x {self.product.name}'
+    return f'{self.quantity}x {self.product.name} @ €{self.unit_price}'
   
   class Meta:
     verbose_name = "Order item"

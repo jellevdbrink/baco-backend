@@ -6,6 +6,8 @@ from django.utils.html import format_html
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+  readonly_fields = ("total_amount", "datetime")
+
   def has_add_permission(self, request, obj=None):
     return False
 

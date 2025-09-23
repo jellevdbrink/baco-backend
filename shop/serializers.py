@@ -38,7 +38,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = OrderItem
-    fields = ["id", "product", "product_id", "quantity"]
+    fields = ["id", "product", "product_id", "unit_price", "quantity"]
+    read_only_fields = ["unit_price"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -56,6 +57,7 @@ class OrderSerializer(serializers.ModelSerializer):
     for item_data in items_data:
       OrderItem.objects.create(order=order, **item_data)
 
+    order.save()
     return order
 
 
