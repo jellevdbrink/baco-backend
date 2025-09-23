@@ -104,7 +104,7 @@ class Payment(models.Model):
   by = models.ForeignKey(TeamMember, verbose_name='Made by', on_delete=models.CASCADE)
   description = models.TextField('Description', blank=True)
   amount = models.DecimalField('Amount', max_digits=5, decimal_places=2)
-  proof_picture = models.ImageField('Proof picture', upload_to="payment_proofs")
+  proof_picture = models.ImageField('Proof picture', upload_to="payment_proofs", blank=True)
   completed = models.BooleanField('Completed', default=False)
 
   def __str__(self):
