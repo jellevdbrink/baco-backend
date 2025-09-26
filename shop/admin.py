@@ -6,6 +6,7 @@ from django.utils.html import format_html
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+  list_display = ("__str__", "total_amount")
   readonly_fields = ("total_amount", "datetime")
 
   def has_add_permission(self, request, obj=None):
@@ -14,13 +15,18 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
+  list_display = ("__str__", "order")
+
   def has_add_permission(self, request, obj=None):
     return False
     
 
 @admin.register(TeamMember)
 class TeamMemberAdmin(admin.ModelAdmin):
-  list_display = ("name", "balance")
+  list_display = ("name", "team", "display_balance", "balance")
+
+  def display_balance(self, obj):
+    return obj.balance - 15
 
 
 @admin.register(Payment)
@@ -60,6 +66,14 @@ class PaymentAdmin(admin.ModelAdmin):
     return redirect(f"../../{pk}/change/")
 
 
-admin.site.register(Team)
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+  list_display = ("__str__", "start_date")
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+  list_display = ("name", "category", "price", "visible")
+
+
 admin.site.register(Category)
-admin.site.register(Product)
