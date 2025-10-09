@@ -1,7 +1,7 @@
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from datetime import date, timedelta
 from django.db.models.functions import TruncDate
 from django.utils.timezone import now
@@ -17,8 +17,10 @@ class TeamViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TeamMemberViewSet(viewsets.ReadOnlyModelViewSet):
-  queryset = TeamMember.objects.all()
   serializer_class = TeamMemberSerializer
+
+  def get_queryset(self):
+    return TeamMember.objects.annotate(order_count=Count("orders")).order_by("-order_count")
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
