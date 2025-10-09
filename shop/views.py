@@ -34,7 +34,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
   def get_queryset(self):
     queryset = Product.objects.annotate(
-        total_ordered=Coalesce(Sum("order_items__quantity"), 0)
+        total_ordered=Coalesce(Sum("orderitem__quantity"), 0)
       ).order_by("-total_ordered")
     
     category_id = self.request.query_params.get('category')
