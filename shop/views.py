@@ -2,6 +2,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum, Count
+from django.db.models.functions import Coalesce
 from datetime import date, timedelta
 from django.db.models.functions import TruncDate
 from django.utils.timezone import now
@@ -29,11 +30,13 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
-  queryset = Product.objects.all()
   serializer_class = ProductSerializer
 
   def get_queryset(self):
-    queryset = Product.objects.all()
+    queryset = Product.objects.annotate(
+        total_ordered=Coalesce(Sum("order_items__quantity"), 0)
+      ).order_by("-total_ordered")
+    
     category_id = self.request.query_params.get('category')
     if category_id is not None:
       queryset = queryset.filter(category_id=category_id)
