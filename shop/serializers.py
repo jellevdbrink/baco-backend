@@ -28,6 +28,8 @@ class ProductSerializer(serializers.ModelSerializer):
   class Meta:
     model = Product
     fields = "__all__"
+    fields = ["id", "name", "image", "description", "cost_price", "price", "category", "visible"]
+    read_only_fields = ["price"]
 
 
 class OrderItemSerializer(serializers.ModelSerializer):

@@ -1,6 +1,9 @@
 from django.db import models
 from django.db.models import Sum, F
 from django.core.validators import MinValueValidator
+from decimal import Decimal, ROUND_HALF_UP
+
+BACO_MARGIN = 1.1 # Margin to go on products: 1.1 = 10%
 
 class Team(models.Model):
   number = models.PositiveIntegerField('Number', unique=True)
@@ -50,9 +53,19 @@ class Product(models.Model):
   name = models.CharField('Name', max_length=100)
   image = models.ImageField('Image', upload_to='product_images')
   description = models.TextField('Description', max_length=255, blank=True)
-  price = models.DecimalField('Price', decimal_places=2, max_digits=5)
   category = models.ForeignKey(Category, verbose_name='Category', on_delete=models.RESTRICT)
   visible = models.BooleanField('Visible', default=True)
+
+  cost_price = models.DecimalField('Cost Price', max_digits=5, decimal_places=2, default=0)
+  price = models.DecimalField('Price', decimal_places=2, max_digits=5)
+
+  def calculate_price(self):
+    new_price = self.cost_price * Decimal(BACO_MARGIN)
+    return (new_price / Decimal("0.05")).quantize(0, ROUND_HALF_UP) * Decimal("0.05")
+  
+  def save(self, *args, **kwargs):
+    self.price = self.calculate_price()
+    super().save(*args, **kwargs)
 
   def __str__(self):
     return self.name
