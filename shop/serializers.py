@@ -24,12 +24,16 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
   category = CategorySerializer(read_only=True)
+  unit_cost = serializers.SerializerMethodField()
+
+  def get_unit_cost(self, obj):
+    return round(float(obj.calculate_unit_cost()), 2)
 
   class Meta:
     model = Product
     fields = "__all__"
-    fields = ["id", "name", "image", "description", "cost_price", "price", "category", "visible"]
-    read_only_fields = ["price"]
+    fields = ["id", "name", "image", "description", "price", "category", "visible"]
+    read_only_fields = ["price", "unit_cost"]
 
 
 class OrderItemSerializer(serializers.ModelSerializer):

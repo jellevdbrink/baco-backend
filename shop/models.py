@@ -5,6 +5,12 @@ from decimal import Decimal, ROUND_HALF_UP
 
 BACO_MARGIN = 1.1 # Margin to go on products: 1.1 = 10%
 
+BTW_CHOICES = [
+  (9, "9%"),
+  (0, "0%"),
+  (21, "21%")
+]
+
 class Team(models.Model):
   number = models.PositiveIntegerField('Number', unique=True)
   start_date = models.DateField('Start date')
@@ -56,11 +62,20 @@ class Product(models.Model):
   category = models.ForeignKey(Category, verbose_name='Category', on_delete=models.RESTRICT)
   visible = models.BooleanField('Visible', default=True)
 
-  cost_price = models.DecimalField('Cost Price', max_digits=5, decimal_places=2, default=0)
+  cost_ex_btw = models.DecimalField('Cost Price (ex. BTW)', max_digits=5, decimal_places=2, default=0, help_text='Total cost for full package, excluding BTW')
+  pack_size = models.PositiveIntegerField('Pack Size', default=24, help_text='Number of units in the package')
+  btw = models.PositiveSmallIntegerField('BTW-%', choices=BTW_CHOICES, default=1.09)
   price = models.DecimalField('Price', decimal_places=2, max_digits=5)
 
+  def calculate_unit_cost(self):
+    if self.pack_size == 0:
+      return Decimal("0.00")
+    
+    btw_multiplier = Decimal("1") + (Decimal(self.btw) / Decimal("100"))
+    return (self.cost_ex_btw * btw_multiplier) / Decimal(self.pack_size)
+
   def calculate_price(self):
-    new_price = self.cost_price * Decimal(BACO_MARGIN)
+    new_price = self.calculate_unit_cost() * Decimal(BACO_MARGIN)
     return (new_price / Decimal("0.05")).quantize(0, ROUND_HALF_UP) * Decimal("0.05")
   
   def save(self, *args, **kwargs):

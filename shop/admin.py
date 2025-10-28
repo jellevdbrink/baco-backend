@@ -73,7 +73,42 @@ class TeamAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-  list_display = ("name", "category", "price", "visible")
+  list_display = (
+    "name",
+    "category",
+    "formatted_price",
+    "unit_cost_preview",
+    "visible",
+  )
+  list_filter = ("visible", "category")
+  search_fields = ("name",)
+
+  readonly_fields = ("price", "unit_cost_preview")
+
+  fieldsets = (
+    ("Product Info", {
+      "fields": ("name", "image", "description", "category", "visible")
+    }),
+    ("Cost Calculator", {
+      "fields": (
+        "cost_ex_btw",
+        "pack_size",
+        "btw",
+        "unit_cost_preview",
+        "price",
+      )
+    }),
+  )
+
+  def unit_cost_preview(self, obj):
+    if obj.id:
+        return f"€{obj.calculate_unit_cost():.2f}"
+    return "-"
+  unit_cost_preview.short_description = "Unit Cost (incl. BTW)"
+
+  def formatted_price(self, obj):
+    return f"€{obj.price:.2f}" if obj.price is not None else "-"
+  formatted_price.short_description = "Sale Price"
 
 
 @admin.register(Category)
