@@ -64,7 +64,7 @@ class Product(models.Model):
 
   cost_ex_btw = models.DecimalField('Cost Price (ex. BTW)', max_digits=5, decimal_places=2, default=0, help_text='Total cost for full package, excluding BTW')
   pack_size = models.PositiveIntegerField('Pack Size', default=24, help_text='Number of units in the package')
-  btw = models.PositiveSmallIntegerField('BTW-%', choices=BTW_CHOICES, default=1.09)
+  btw = models.PositiveSmallIntegerField('BTW-%', choices=BTW_CHOICES, default=9)
   price = models.DecimalField('Price', decimal_places=2, max_digits=5)
 
   def calculate_unit_cost(self):
