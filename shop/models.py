@@ -36,6 +36,7 @@ class TeamMember(models.Model):
 class Category(models.Model):
   name = models.CharField('Name', unique=True, max_length=50)
   icon = models.CharField('Icon', max_length=20)
+  visible = models.BooleanField('Visible', default=True)
 
   def __str__(self):
     return self.name
