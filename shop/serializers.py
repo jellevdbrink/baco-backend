@@ -25,9 +25,13 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
   category = CategorySerializer(read_only=True)
   unit_cost = serializers.SerializerMethodField()
+  price = serializers.SerializerMethodField()
 
   def get_unit_cost(self, obj):
     return round(float(obj.calculate_unit_cost()), 2)
+  
+  def get_price(self, obj):
+    return round(float(obj.price), 2)
 
   class Meta:
     model = Product

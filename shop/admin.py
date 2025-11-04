@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
-from shop.models import Category, Order, OrderItem, Payment, Product, Team, TeamMember
+from shop.models import Category, Order, OrderItem, Payment, Product, Settings, Team, TeamMember
 from django.utils.html import format_html
 
 @admin.register(Order)
@@ -76,14 +76,14 @@ class ProductAdmin(admin.ModelAdmin):
   list_display = (
     "name",
     "category",
-    "formatted_price",
+    "price_display",
     "unit_cost_preview",
     "visible",
   )
   list_filter = ("visible", "category")
   search_fields = ("name",)
 
-  readonly_fields = ("price", "unit_cost_preview")
+  readonly_fields = ("unit_cost_preview",)
 
   fieldsets = (
     ("Product Info", {
@@ -95,22 +95,28 @@ class ProductAdmin(admin.ModelAdmin):
         "pack_size",
         "btw",
         "unit_cost_preview",
-        "price",
       )
     }),
   )
 
   def unit_cost_preview(self, obj):
-    if obj.id:
-        return f"€{obj.calculate_unit_cost():.2f}"
-    return "-"
+    return f"€{obj.calculate_unit_cost():.2f}" if obj.id else "-"
   unit_cost_preview.short_description = "Unit Cost (incl. BTW)"
 
-  def formatted_price(self, obj):
-    return f"€{obj.price:.2f}" if obj.price is not None else "-"
-  formatted_price.short_description = "Sale Price"
+  def price_display(self, obj):
+    return f"€{obj.price:.2f}"
+  price_display.short_description = "Sale Price"
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
   list_display = ("name", "visible")
+
+
+@admin.register(Settings)
+class ShopSettingsAdmin(admin.ModelAdmin):
+  list_display = ("margin_percentage",)
+
+  def has_add_permission(self, request):
+    return not Settings.objects.exists() # To not allow multiple rows
+

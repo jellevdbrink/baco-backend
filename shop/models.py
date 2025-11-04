@@ -65,7 +65,6 @@ class Product(models.Model):
   cost_ex_btw = models.DecimalField('Cost Price (ex. BTW)', max_digits=5, decimal_places=2, default=0, help_text='Total cost for full package, excluding BTW')
   pack_size = models.PositiveIntegerField('Pack Size', default=24, help_text='Number of units in the package')
   btw = models.PositiveSmallIntegerField('BTW-%', choices=BTW_CHOICES, default=9)
-  price = models.DecimalField('Price', decimal_places=2, max_digits=5)
 
   def calculate_unit_cost(self):
     if self.pack_size == 0:
@@ -73,14 +72,14 @@ class Product(models.Model):
     
     btw_multiplier = Decimal("1") + (Decimal(self.btw) / Decimal("100"))
     return (self.cost_ex_btw * btw_multiplier) / Decimal(self.pack_size)
-
-  def calculate_price(self):
-    new_price = self.calculate_unit_cost() * Decimal(BACO_MARGIN)
-    return (new_price / Decimal("0.05")).quantize(0, ROUND_HALF_UP) * Decimal("0.05")
   
-  def save(self, *args, **kwargs):
-    self.price = self.calculate_price()
-    super().save(*args, **kwargs)
+  @property
+  def price(self):
+    margin = Settings.objects.first().margin_percentage
+    unit_cost = self.calculate_unit_cost()
+    new_price = unit_cost * (Decimal("1") + (margin / Decimal("100")))
+    rounded = (new_price / Decimal("0.05")).quantize(0, ROUND_HALF_UP) * Decimal("0.05")
+    return rounded
 
   def __str__(self):
     return self.name
@@ -155,3 +154,13 @@ class Payment(models.Model):
     verbose_name_plural = "Payments"
     ordering = ['completed']
 
+
+class Settings(models.Model):
+  margin_percentage = models.DecimalField('Margin (%)', max_digits=5, decimal_places=2, default=10.00, help_text='This margin applies to all products')
+
+  def __str__(self):
+    return f"Global settings (margin {self.margin_percentage}%)"
+
+  class Meta:
+    verbose_name = "Shop settings"
+    verbose_name_plural = "Shop settings"
