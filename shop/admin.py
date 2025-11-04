@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 from django.urls import path
 from shop.models import Category, Order, OrderItem, Payment, Product, Settings, Team, TeamMember
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -83,7 +84,7 @@ class ProductAdmin(admin.ModelAdmin):
   list_filter = ("visible", "category")
   search_fields = ("name",)
 
-  readonly_fields = ("unit_cost_preview",)
+  readonly_fields = ("unit_cost_preview", "price_preview")
 
   fieldsets = (
     ("Product Info", {
@@ -95,6 +96,7 @@ class ProductAdmin(admin.ModelAdmin):
         "pack_size",
         "btw",
         "unit_cost_preview",
+        "price_preview",
       )
     }),
   )
@@ -106,6 +108,17 @@ class ProductAdmin(admin.ModelAdmin):
   def price_display(self, obj):
     return f"€{obj.price:.2f}"
   price_display.short_description = "Sale Price"
+
+  def price_preview(self, obj):
+    margin = Settings.objects.first().margin_percentage
+    return mark_safe(
+      f"<div id='price-preview' data-margin='{1 + (margin / 100)}' style='font-weight:600;'>—</div>"
+      "<p style='color:#666;'>Live price preview</p>"
+    )
+
+
+  class Media:
+    js = ("/static/js/product_price_live.js",)
 
 
 @admin.register(Category)
